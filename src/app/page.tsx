@@ -71,7 +71,7 @@ export default function Home() {
       <div className="max-w-3xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            My Todo App
+            ToDoデモアプリ
           </h1>
           <p className="text-gray-600">
             完了: {completedCount} / 全体: {totalCount}
