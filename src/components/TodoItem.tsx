@@ -6,7 +6,7 @@ import type { Todo } from '@/types/todo'
 
 type TodoItemProps = {
   todo: Todo
-  onUpdate: (id: string, data: { completed?: boolean; title?: string; description?: string }) => Promise<void>
+  onUpdate: (id: string, data: { completed?: boolean; title?: string; description?: string; dueDate?: string }) => Promise<void>
   onDelete: (id: string) => Promise<void>
 }
 
@@ -15,15 +15,32 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
   const [editTitle, setEditTitle] = useState(todo.title)
   const [editDescription, setEditDescription] = useState(todo.description || '')
 
+  // dueDateを安全に処理
+  const getDueDateString = (dueDate: any): string => {
+    if (!dueDate) return ''
+    try {
+      const date = new Date(dueDate)
+      if (isNaN(date.getTime())) return ''
+      return date.toISOString().split('T')[0]
+    } catch {
+      return ''
+    }
+  }
+
+  const [editDueDate, setEditDueDate] = useState(getDueDateString(todo.dueDate))
+
+  const isOverdue = !todo.completed && todo.dueDate && new Date(todo.dueDate) < new Date(new Date().setHours(0, 0, 0, 0))
+
   const handleToggleComplete = async () => {
     await onUpdate(todo.id, { completed: !todo.completed })
   }
 
   const handleSaveEdit = async () => {
-    if (editTitle.trim()) {
+    if (editTitle.trim() && editDueDate) {
       await onUpdate(todo.id, {
         title: editTitle,
-        description: editDescription || undefined
+        description: editDescription || undefined,
+        dueDate: editDueDate
       })
       setIsEditing(false)
     }
@@ -32,6 +49,7 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
   const handleCancelEdit = () => {
     setEditTitle(todo.title)
     setEditDescription(todo.description || '')
+    setEditDueDate(getDueDateString(todo.dueDate))
     setIsEditing(false)
   }
 
@@ -50,7 +68,20 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
           onChange={(e) => setEditDescription(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={2}
+          placeholder="説明文（任意）"
         />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            期日 *
+          </label>
+          <input
+            type="date"
+            value={editDueDate}
+            onChange={(e) => setEditDueDate(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
         <div className="flex gap-2">
           <button
             onClick={handleSaveEdit}
@@ -70,7 +101,9 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
   }
 
   return (
-    <div className={`bg-white p-4 rounded-lg shadow-md flex items-start gap-4 ${todo.completed ? 'opacity-60' : ''}`}>
+    <div className={`p-4 rounded-lg shadow-md flex items-start gap-4 ${
+      todo.completed ? 'bg-white opacity-60' : isOverdue ? 'bg-red-50 border-2 border-red-200' : 'bg-white'
+    }`}>
       <button
         onClick={handleToggleComplete}
         className={`mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
@@ -91,8 +124,13 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
             {todo.description}
           </p>
         )}
-        <p className="mt-2 text-xs text-gray-400">
-          {new Date(todo.createdAt).toLocaleString('ja-JP')}
+        {todo.dueDate && (
+          <p className={`mt-2 text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+            期日: {new Date(todo.dueDate).toLocaleDateString('ja-JP')}
+          </p>
+        )}
+        <p className="mt-1 text-xs text-gray-400">
+          作成: {new Date(todo.createdAt).toLocaleString('ja-JP')}
         </p>
       </div>
 

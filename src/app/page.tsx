@@ -27,7 +27,7 @@ export default function Home() {
     fetchTodos()
   }, [])
 
-  const handleCreateTodo = async (data: { title: string; description?: string }) => {
+  const handleCreateTodo = async (data: { title: string; description?: string; dueDate: string }) => {
     const response = await fetch('/api/todos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,7 +71,7 @@ export default function Home() {
       <div className="max-w-3xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            ToDoデモアプリ
+            デモアプリ
           </h1>
           <p className="text-gray-600">
             完了: {completedCount} / 全体: {totalCount}

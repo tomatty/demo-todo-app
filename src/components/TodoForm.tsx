@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 
 type TodoFormProps = {
-  onSubmit: (data: { title: string; description?: string }) => Promise<void>
+  onSubmit: (data: { title: string; description?: string; dueDate: string }) => Promise<void>
 }
 
 export default function TodoForm({ onSubmit }: TodoFormProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,10 +20,12 @@ export default function TodoForm({ onSubmit }: TodoFormProps) {
     try {
       await onSubmit({
         title,
-        description: description || undefined
+        description: description || undefined,
+        dueDate
       })
       setTitle('')
       setDescription('')
+      setDueDate('')
     } catch (error) {
       console.error('Failed to create todo:', error)
     } finally {
@@ -63,9 +66,23 @@ export default function TodoForm({ onSubmit }: TodoFormProps) {
         />
       </div>
 
+      <div>
+        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+          期日 *
+        </label>
+        <input
+          id="dueDate"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       <button
         type="submit"
-        disabled={isSubmitting || !title.trim()}
+        disabled={isSubmitting || !title.trim() || !dueDate}
         className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
       >
         <Plus size={20} />

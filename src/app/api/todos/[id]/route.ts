@@ -16,9 +16,18 @@ export async function PUT(request: Request, context: Params) {
     const json = await request.json()
     const body = todoUpdateSchema.parse(json)
 
+    const updateData: any = {
+      ...body,
+    }
+
+    // dueDateが文字列で来た場合、Date型に変換
+    if (body.dueDate) {
+      updateData.dueDate = new Date(body.dueDate)
+    }
+
     const todo = await prisma.todo.update({
       where: { id },
-      data: body,
+      data: updateData,
     })
 
     return NextResponse.json(todo)

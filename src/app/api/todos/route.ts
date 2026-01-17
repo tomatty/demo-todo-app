@@ -29,20 +29,23 @@ export async function POST(request: Request) {
       data: {
         title: body.title,
         description: body.description,
+        dueDate: new Date(body.dueDate),
       },
     })
 
     return NextResponse.json(todo, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.errors)
       return NextResponse.json(
         { error: error.errors },
         { status: 400 }
       )
     }
     console.error('Failed to create todo:', error)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     return NextResponse.json(
-      { error: 'Failed to create todo' },
+      { error: 'Failed to create todo', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
